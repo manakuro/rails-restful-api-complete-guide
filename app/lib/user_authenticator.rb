@@ -1,35 +1,22 @@
 class UserAuthenticator
   class AuthenticationError < StandardError; end
 
-  attr_reader :user, :access_token
+  # attr_reader :user, :access_token
+  attr_reader :user
 
   def initialize(code)
     @code = code
   end
 
   def perform
-    raise AuthenticationError if code.blank?
-    raise AuthenticationError if token.try(:error).present?
-
-    prepare_user
-    @access_token = if user.access_token.present?
-      user.access_token
+    if token.try(:error).present?
+      raise AuthenticationError
     else
-      user.create_access_token
+      prepare_user
     end
   end
 
   private
-
-  def token
-    @token ||= client.exchange_code_for_token(code)
-  end
-
-  def user_data
-    @user_data ||= Octokit::Client.new(
-      access_token: token
-    ).user.to_h.slice(:login, :avatar_url, :url, :name)
-  end
 
   def client
     @client ||= Octokit::Client.new(
@@ -38,8 +25,20 @@ class UserAuthenticator
     )
   end
 
+  def token
+    @token ||= client.exchange_code_for_token(code)
+  end
+
+  def user_data
+    @user_data ||= user_client(token).user.to_h.slice(:login, :avatar_url, :url, :name)
+  end
+
+  def user_client(token)
+    Octokit::Client.new(access_token: token)
+  end
+
   def prepare_user
-    @user = if User.exists?(login: user_data[:login])
+    @user ||= if User.exists?(login: user_data[:login])
       User.find_by(login: user_data[:login])
     else
       User.create!(user_data.merge(provider: 'github'))
@@ -47,5 +46,4 @@ class UserAuthenticator
   end
 
   attr_reader :code
-
 end
