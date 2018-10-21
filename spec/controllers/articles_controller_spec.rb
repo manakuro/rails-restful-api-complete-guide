@@ -147,8 +147,6 @@ describe ArticlesController do
       subject { patch :update, params: { id: other_article.id } }
       before { request.headers['authorization'] = "Bearer #{access_token.token}" }
       it_behaves_like 'forbidden_requests'
-
-
     end
 
     context 'when authorized' do
@@ -217,6 +215,42 @@ describe ArticlesController do
       it 'should update the article' do
         subject
         expect(article.reload.title).to eq(valid_attributes['data']['attributes']['title'])
+      end
+    end
+  end
+
+  describe '#delete' do
+    let(:user) { create :user }
+    let(:article) { create :article, user: user }
+    let(:access_token) { user.create_access_token }
+
+    subject { delete :destroy, params: { id: article.id } }
+
+    context 'when no code provided' do
+      it_behaves_like 'forbidden_requests'
+    end
+
+    context 'when invalid code provided' do
+      before { request.headers['authorization'] = 'invalid token' }
+      it_behaves_like 'forbidden_requests'
+    end
+
+    context 'when authorized' do
+      before { request.headers['authorization'] = "Bearer #{access_token.token}" }
+
+      it 'should have 204 status code' do
+        subject
+        expect(response).to have_http_status(:no_content)
+      end
+
+      it 'should have empty json body' do
+        subject
+        expect(response.body).to be_blank
+      end
+
+      it 'should destroy the article' do
+        article
+        expect{ subject }.to change{ user.articles.count }.by(-1)
       end
     end
   end
