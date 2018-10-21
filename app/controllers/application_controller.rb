@@ -31,4 +31,14 @@ class ApplicationController < ActionController::API
 
     render json: { 'errors': [error] }, status: 401
   end
+
+  def authorization_error
+    error = {
+      "status" => "403",
+      "source" => { "pointer" => "/headers/authorization" },
+      "title" =>  "Not authorized",
+      "detail" => "You have no right to access this resource."
+    }
+    render json: { "errors": [error] }, status: 403
+  end
 end
