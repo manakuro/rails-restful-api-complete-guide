@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::API
   class AuthorizationError < StandardError; end
-  rescue_from UserAuthenticator::AuthenticationError, with: :authentication_error
+  rescue_from UserAuthenticator::AuthenticationError,
+              with: :authentication_error
   rescue_from AuthorizationError, with: :authorization_error
 
   before_action :authorize!
@@ -22,11 +23,12 @@ class ApplicationController < ActionController::API
 
   def authentication_error
     error = {
-      "status" => '401',
-      "source" => { "pointer": '/code' },
-      "title" =>  'Authentication code is invalid',
-      "detail" =>  'You must provide valid code in order to exchange it for token.'
+      "status" => "401",
+      "source" => { "pointer" => "/code" },
+      "title" =>  "Invalid Attribute",
+      "detail" => "First name must contain at least three characters."
     }
+
     render json: { 'errors': [error] }, status: 401
   end
 end
