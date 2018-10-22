@@ -10,7 +10,7 @@ class CommentsController < ApplicationController
   end
 
 
-  # POST /comments
+  # POST /comments test
   def create
     @comment = @article.comments.build(comment_params.merge(user: current_user))
 
