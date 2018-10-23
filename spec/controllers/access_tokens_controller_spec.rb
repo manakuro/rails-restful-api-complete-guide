@@ -2,13 +2,13 @@ require 'rails_helper'
 
 RSpec.describe AccessTokensController, type: :controller do
   describe 'POST #create' do
-    context 'when no code provided' do
+    context 'when no auth_data provided' do
       subject { post :create }
-      it_behaves_like 'unauthorized_requests'
+      it_behaves_like 'unauthorized_standard_requests'
     end
 
     context 'when invalid code provided' do
-      let(:authenticator_mock) { UserAuthenticator.new('sample_code') }
+      let(:authenticator_mock) { UserAuthenticator::Standard.new({}) }
       let(:github_error) {
         double('Sawyer::Resource', error: 'bad_verification_code')
       }
@@ -22,12 +22,12 @@ RSpec.describe AccessTokensController, type: :controller do
       end
 
       subject { post :create, params: { code: 'invalid' } }
-      it_behaves_like 'unauthorized_requests'
+      it_behaves_like 'unauthorized_standard_requests'
     end
 
     context 'when success request' do
       subject { post :create, params: { code: 'valid' } }
-      let(:authenticator_mock) { UserAuthenticator.new('sample_code') }
+      let(:authenticator_mock) { UserAuthenticator::Oauth.new(code: 'valid') }
       let(:user_client) {
         double('Ocktokit::Client')
       }
