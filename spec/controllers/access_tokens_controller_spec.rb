@@ -18,7 +18,7 @@ RSpec.describe AccessTokensController, type: :controller do
       before do
         allow(client).to receive(:exchange_code_for_token).and_return(github_error)
         allow(UserAuthenticator).to receive(:new).and_return(authenticator_mock)
-        allow(authenticator_mock).to receive(:client).and_return(client)
+        allow(authenticator_mock.authenticator).to receive(:client).and_return(client)
       end
 
       subject { post :create, params: { code: 'invalid' } }
