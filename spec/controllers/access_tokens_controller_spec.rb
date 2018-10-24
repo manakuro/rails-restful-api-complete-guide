@@ -8,7 +8,7 @@ RSpec.describe AccessTokensController, type: :controller do
     end
 
     context 'when invalid code provided' do
-      let(:authenticator_mock) { UserAuthenticator::Standard.new({}) }
+      let(:authenticator_mock) { UserAuthenticator.new }
       let(:github_error) {
         double('Sawyer::Resource', error: 'bad_verification_code')
       }
@@ -27,7 +27,7 @@ RSpec.describe AccessTokensController, type: :controller do
 
     context 'when success request' do
       subject { post :create, params: { code: 'valid' } }
-      let(:authenticator_mock) { UserAuthenticator::Oauth.new(code: 'valid') }
+      let(:authenticator_mock) { UserAuthenticator.new(code: 'valid') }
       let(:user_client) {
         double('Ocktokit::Client')
       }
@@ -46,8 +46,8 @@ RSpec.describe AccessTokensController, type: :controller do
         allow(client).to receive(:exchange_code_for_token).and_return('valid')
         allow(UserAuthenticator).to receive(:new).and_return(authenticator_mock)
         allow(user_client).to receive(:user).and_return(user_data)
-        allow(authenticator_mock).to receive(:client).and_return(client)
-        allow(authenticator_mock).to receive(:user_client).and_return(user_client)
+        allow(authenticator_mock.authenticator).to receive(:client).and_return(client)
+        allow(authenticator_mock.authenticator).to receive(:user_client).and_return(user_client)
       end
 
       it 'should return 201 status code' do

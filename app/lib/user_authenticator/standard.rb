@@ -11,7 +11,7 @@ class UserAuthenticator::Standard < UserAuthenticator
 
   private
 
-  def client
-    {}
-  end
+  def client; end
+
+  def user_client; end
 end

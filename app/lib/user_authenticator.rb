@@ -1,6 +1,8 @@
 class UserAuthenticator
   class AuthenticationError < StandardError; end
 
+  delegate :client, :user_client, to: :@authenticator
+
   attr_reader :authenticator
 
   def initialize(code: nil, login: nil, password: nil)
