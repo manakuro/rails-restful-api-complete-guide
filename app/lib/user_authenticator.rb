@@ -2,17 +2,31 @@ class UserAuthenticator
   class AuthenticationError < StandardError; end
 
   delegate :client,
-           :user_client, :user,
-           :perform,
-           :access_token, to: :@authenticator, allow_nil: true
+           :user_client, :user,to: :@authenticator, allow_nil: true
 
-  attr_reader :authenticator
+  attr_reader :authenticator, :access_token
 
   def initialize(code: nil, login: nil, password: nil)
     @authenticator = if code.present?
       Oauth.new(code)
     else
       Standard.new(login, password)
+    end
+  end
+
+  def perform
+    authenticator.perform
+
+    set_access_token
+  end
+
+  private
+
+  def set_access_token
+    @access_token = if user.access_token.present?
+      user.access_token
+    else
+      user.create_access_token
     end
   end
 end
